@@ -1,0 +1,15 @@
+# Check if the image i.e. loaded from .nrrd format is aligned with the Mask or not
+
+[1]
+* for the following patient IDs, the dicom.nrrd is in a reverse sequence to that of Mask:-
+  (T2M.nrrd and T2M+.nrrd are alligned with the TIFF files)
+  
+* When I load the DICOM series using sitk then also it is loading in a reverse sequence as that of the masks (TIFFs)
+
+[Pat10, Pat30, Pat31, Pat63, Pat65, Pat73, Pat74, Pat75, Pat76, Pat78, Pat79, Pat82, Pat83, Pat84, Pat85, Pat87, Pat88]
+
+Patient IDs for which the above are aligned:-
+
+[Pat1, Pat2, Pat3, Pat6, Pat8, Pat9, Pat11, Pat12, Pat13, Pat14, Pat16, Pat18, Pat19, Pat20, Pat21, Pat24, Pat36, Pat38, Pat39, Pat40, Pat42, Pat43, Pat44, Pat46, Pat47, Pat51, Pat52, Pat53, Pat54, Pat55, Pat56, Pat57, Pat58, Pat59, Pat61, Pat62, Pat66, Pat67, Pat69, Pat71, Pat72, Pat89, Pat93, Pat97]
+
+

@@ -1,0 +1,8 @@
+[1] df.csv :- Dataframe with the following columns:-
+
+Sl No. | Patient ID | DICOM path | Tiff T2M path | Tiff T2M+ path | Mask T2M path | Mask T2M+ path |
+
+DICOM path - Path where all the dicom slices of each patient is stored.
+TIFF path - Path where all the tiff slices of each patient is stored.
+
+[2] patients.txt :- Text file which has information about the patient IDs where either the DICOM or the TIFF doesnot exists.

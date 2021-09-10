@@ -5,7 +5,22 @@ from sklearn.preprocessing import KBinsDiscretizer, StandardScaler
 from sklearn.feature_selection import SelectFromModel
 from sklearn.linear_model import Lasso, LogisticRegression
 
-def select_features(method, params, selectionFeaturesPath, manualFeaturesPath): 
+def discretization(X, nBins, discStrategy):
+    """
+    ACTION: 
+        Discretizes the data
+    INPUTS: 
+        X: DataFrame with input data
+        nBins: Number of bins of the discretization
+        discStrategy: Strategy for specifying the bins (e.g 'uniform', 'quantile', 'kmeans')
+    OUTPUT: 
+        New DataFrame with discretized values. 
+    """
+    trans = KBinsDiscretizer(n_bins=nBins, encode='ordinal', strategy=discStrategy)
+    XnewValues = trans.fit_transform(X.values)
+    return pd.DataFrame(data=XnewValues, index=X.index, columns=X.columns)
+
+def select_features(method, params, selectionFeaturesPath, manualFeaturesPath, args): 
     """
     ACTION: 
         Select features to use for machine learning. Method is specified as an input.
@@ -20,10 +35,10 @@ def select_features(method, params, selectionFeaturesPath, manualFeaturesPath):
     OUTPUT:
         List of selected features
     """
-
     # Read data from csv-files
-    X = pd.read_csv(selectionFeaturesPath, index_col=0, delimiter=';') # All data in selectionFeatures.csv
-    y = pd.read_csv(manualFeaturesPath, index_col=0, delimiter=';') # All data in manualFeatures.csv
+    X = pd.read_csv(selectionFeaturesPath, index_col="patientId", delimiter=';') # All data in selectionFeatures.csv
+    y = pd.read_csv(manualFeaturesPath, index_col="id") # All data in manualFeatures.csv
+    y = y.drop(columns=['Unnamed: 0'])
     idX = X.index.values # Patients with input data
     y = y[y['outcome'] >= 0] # Keep only patients with given outcome
     idY = y.index.values # Patients with output data
@@ -32,11 +47,12 @@ def select_features(method, params, selectionFeaturesPath, manualFeaturesPath):
     patIds = np.array([id for id in idX if id in idY])
 
     # Remove test data before doing feature selection
-    testIds = [1, 8, 13, 20, 40, 44, 49, 55]
+#     testIds = [1, 8, 13, 20, 40, 44, 49, 55]
+    testIds = args.testIds
     trainIds = [v for v in patIds if v not in testIds]
     y = y.loc[trainIds]
     X = X.loc[trainIds]
-
+#     print(X.shape, y.shape)
     # Drop useless information
     X_diagnostics = [col for col in X if col.startswith('diagnostics')]
     X = X.drop(columns=X_diagnostics) # Data in selectionFeatures.csv, excluding diagnostic features
@@ -99,17 +115,3 @@ def select_features(method, params, selectionFeaturesPath, manualFeaturesPath):
     return []
 
 
-def discretization(X, nBins, discStrategy):
-    """
-    ACTION: 
-        Discretizes the data
-    INPUTS: 
-        X: DataFrame with input data
-        nBins: Number of bins of the discretization
-        discStrategy: Strategy for specifying the bins (e.g 'uniform', 'quantile', 'kmeans')
-    OUTPUT: 
-        New DataFrame with discretized values. 
-    """
-    trans = KBinsDiscretizer(n_bins=nBins, encode='ordinal', strategy=discStrategy)
-    XnewValues = trans.fit_transform(X.values)
-    return pd.DataFrame(data=XnewValues, index=X.index, columns=X.columns)

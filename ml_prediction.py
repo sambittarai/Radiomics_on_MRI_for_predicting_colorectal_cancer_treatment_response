@@ -6,10 +6,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn import metrics
 import csv
-import os.path
+import os
 
-
-def create_evaluate_model(method, params, selectedFeatures, selectionFeaturesPath, manualFeaturesPath, paramSearchResultsPath, optimizeParams, scoringOptiMetric = 'r2'):
+def create_evaluate_model(args, method, params, selectedFeatures, selectionFeaturesPath, manualFeaturesPath, paramSearchResultsPath, optimizeParams, scoringOptiMetric = 'r2'):
     """
     ACTION: 
         Train a specified model on the training data. The model parameters will be optimized by cross-validation if specified. 
@@ -36,12 +35,13 @@ def create_evaluate_model(method, params, selectedFeatures, selectionFeaturesPat
     """
 
     # Read input data from csv-files
-    X = pd.read_csv(selectionFeaturesPath, index_col=0, delimiter=';') # All data in selectionFeatures.csv
+    X = pd.read_csv(selectionFeaturesPath, index_col="patientId", delimiter=';') # All data in selectionFeatures.csv
     X = X[selectedFeatures] # Filter on the selected features
     idX = X.index.values # Patients with input data
 
     # Read output data from csv-files
-    y = pd.read_csv(manualFeaturesPath, index_col=0, delimiter=';') # All data in manualFeatures.csv
+    y = pd.read_csv(manualFeaturesPath, index_col="id") # All data in manualFeatures.csv
+    y = y.drop(columns=['Unnamed: 0'])
     y = y[y['outcome'] >= 0] # Keep only patients with given outcome
     y = y[['outcome']] # Keep only outcome
     idY = y.index.values # Patients with output data
@@ -52,7 +52,8 @@ def create_evaluate_model(method, params, selectedFeatures, selectionFeaturesPat
     y = y.loc[patIds]
 
     # Divide data into train- and test-data
-    testIds = [1, 8, 13, 20, 40, 44, 49, 55]
+#     testIds = [1, 8, 13, 20, 40, 44, 49, 55]
+    testIds = args.testIds
     trainIds = [v for v in X.index.values if v not in testIds]
 
     yTest = y.loc[testIds]

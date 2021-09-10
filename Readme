@@ -1,0 +1,63 @@
+[1] config.py :- Has information about all the configurations that is in this repository.
+[2] utils.py :- Helper Functions.
+[3] params.yaml :- specifies the parameters of the radiomic feature extraction. What image types and filter classes should be used? And should normalization and resampling be enabled for example? Here is 
+		   a link to where you can find what all the settings represent. We started with a file we found on GitHub, from someone that did a similar project, but we changed some settings. 
+		   Unfortunately I don't remember which, and neither exactly where we found the original file. 
+
+[3] generate_masks.py :- Automatically generates the 2D binary masks (.png format) for each patient using the TIFF data. It only uses the TIFF_paths as argument and generates the masks.
+
+[4] delete_directories.py :- Deletes all the directories as specified.
+
+[5] prepare_df.py :- Create a dataframe with the following columns:
+
+			Sl No. | Patient ID | DICOM path | Tiff T2M path | Tiff T2M+ path | Mask T2M path | Mask T2M+ path |
+
+			DICOM path - Path where all the dicom slices of each patient is stored.
+			TIFF path - Path where all the tiff slices of each patient is stored.
+			path where the dataframe is created :- /media/sambit/HDD/Sambit/Projects/Radiomics_Project1/Code/Radiomics/save_files/df_raw.csv
+
+[6] generate_nrrds.py :- Take the data path for DICOM, Mask_T2M, Mask_T2M+ as input and generates the corresponding .nrrd file and save it in "Data_Nrrd" folder.
+
+[7] prepare_df_nrrd.py :- Generate the df with the following columns : {| Sl No. | Patient ID | DICOM path | T2M path | T2M+ path |}
+			  Path where the df is created :- /media/sambit/HDD/Sambit/Projects/Radiomics_Project1/Code/Radiomics/save_files/df_nrrd.csv
+
+[7] feature_extraction (folder) :- path to csv-file where to write all the extracted features.
+
+[8] feature_extraction/selection_features.csv :- path to csv-file where to write all the extracted features
+
+[9] feature_extraction.py :- Extract all the radiomic features from all the patients and save it in "feature_extraction/selection_features.csv" file.
+
+[10] feature_selection.py :- Select only the important features out of all the features along with the Patient outcome (1 - 4).
+
+[11] save_files/param_search_results.csv" :- path to csv-file that will be created, containing results from the parameter optimization (This file will be created after executing "ml_prediction.py").
+
+[12] ml_prediction.py :- Performs train, validate, test on the Patient data with the selected features.
+
+[13] run_entire_pipeline.py :- Executes "feature_selection.py" and "ml_prediction.py".
+
+Pipeline:-
+
+	* Include all the relevant arguments in "config.py".
+	* Execute "generate_masks.py". Manually check all the generated 2D binary masks with the original annotation. If you encounter any failing mask (Patient ID where the generated 2D mask is different
+	  from the original annotation), write that patient ID into the file called "manual_masks_to_add.txt". (This step is yet to be completed)
+	* Execute "prepare_df.py" in order to get the dataframe which has path to DICOM & Mask data for all the patients (| Sl No. | Patient ID | DICOM path | Tiff T2M path | Tiff T2M+ path | Mask T2M
+          path | Mask T2M+ path |). Save the "df_raw.csv" and "patients.txt" in /../Radiomics/save_files/
+	* Execute "generate_nrrds.py" in order to generate the .nrrd files from DICOM, Mask_T2M, MaskT2M+ for all the patients and save it in "Data_Nrrd" folder.
+	* Execute "prepare_df_nrrd.py" in order to generate a csv file with the following columns: {| Sl No. | Patient ID | DICOM path | T2M path | T2M+ path |}. All the Patient IDs mentioned in this df
+	  has DICOM.nrrd, T2M.nrrd, T2M+.nrrd files. We need the list of Patient IDs for which all the .nrrd files exists in order to extract the features.
+	* Execute "feature_extraction.py" in order to extract all the radiomic features from all the patients (available) with [T2M, T2M+] masks and save it in "feature_extraction/selection_features.csv".
+	* Execute "run_entire_pipeline.py" which executes "feature_selection.py" and "ml_prediction.py".
+
+
+
+	{ * Execute "feature_selection.py" in order to select only the important features out of all the features that are extracted along with the Patient outcome (1: No response - 4: Complete response).
+	  It returns a list of selected features.
+	  * Execute ml_prediction.py in order to perform train, validate, test on the patient data with the features that is selected.}
+
+
+
+
+
+
+
+	
