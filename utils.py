@@ -156,3 +156,4 @@ def extract_dicom_features(dataPath, features = ['Patients Sex', 'Patients Weigh
                 writer.writerow(patDict)
 
     return allPatsDict
+

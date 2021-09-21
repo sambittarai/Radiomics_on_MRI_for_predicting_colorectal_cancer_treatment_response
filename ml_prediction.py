@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn import metrics
 import csv
 import os
+from sklearn.metrics import confusion_matrix
 
 def create_evaluate_model(args, method, params, selectedFeatures, selectionFeaturesPath, manualFeaturesPath, paramSearchResultsPath, optimizeParams, scoringOptiMetric = 'r2'):
     """
@@ -150,12 +151,14 @@ def validate_model(Xtrain, yTrain, method, params):
         return
 
     # Create k-fold object
-    nSplits = 5
+    nSplits = 7
     kf = KFold(n_splits=nSplits, shuffle=True, random_state=15)
     
     # Init vectors for prediction values
     yPredReg = np.zeros(len(yTrain.index))
     yTrue = np.zeros(len(yTrain.index))
+    
+    yPredProb = np.zeros(len(yTrain.index))
     
     for trainIndex, testIndex in kf.split(Xtrain):
 
@@ -169,10 +172,20 @@ def validate_model(Xtrain, yTrain, method, params):
         model.fit(X1, y1.ravel())
         yPredReg[testIndex] = model.predict(X2)
         yTrue[testIndex] = y2.ravel()
+        
+        yPredProb[testIndex] = model.predict_proba(X2)[:,1]
 
     # Print performance metrics, return true outcome and predicted values
+    save(yTrue, yPredProb, yPredReg)
     print_metrics(yTrue, yPredReg)
     return yTrue, yPredReg
+
+def save(yTrue, yPredProb, yPredReg):
+#     yPredClass = np.round(yPredReg).astype(int)
+    
+    np.save("/media/sambit/HDD/Sambit/Projects/Radiomics_Project1/Code/Radiomics/Predictions/Prediction Values/4_class_classification/yTrue_LogReg_RFclass.npy", yTrue)
+    np.save("/media/sambit/HDD/Sambit/Projects/Radiomics_Project1/Code/Radiomics/Predictions/Prediction Values/4_class_classification/yPredClass_LogReg_RFclass.npy", yPredReg)
+    np.save("/media/sambit/HDD/Sambit/Projects/Radiomics_Project1/Code/Radiomics/Predictions/Prediction Values/4_class_classification/yPredProb_LogReg_RFclass.npy", yPredProb)
 
 def test_model(Xtrain, Xtest, yTrain, yTest, method, params):
     """
@@ -226,17 +239,26 @@ def print_metrics(yTrue, yPredReg):
         yTrue: True output values as list or numpy array
         yPredReg: Predicted regressional output values as list or numpy array (list of int if classification)
     """
-
     # Round values to get predicted class
     yPredClass = np.round(yPredReg).astype(int)
-    
+
     print('')
     print('Accuracy:          ', metrics.accuracy_score(yTrue, yPredClass))
-    print('Precicion (micro): ', metrics.precision_score(yTrue, yPredClass, average='micro', zero_division=0))
-    print('Recall (micro):    ', metrics.recall_score(yTrue, yPredClass, average='micro', zero_division=0))
-    print('Precicion (macro): ', metrics.precision_score(yTrue, yPredClass, average='macro', zero_division=0))
-    print('Recall (macro):    ', metrics.recall_score(yTrue, yPredClass, average='macro', zero_division=0))
-    
+#     print('Precicion (micro): ', metrics.precision_score(yTrue, yPredClass, average='micro', zero_division=0))
+#     print('Recall (micro):    ', metrics.recall_score(yTrue, yPredClass, average='micro', zero_division=0))
+#     print('Precision (macro): ', metrics.precision_score(yTrue, yPredClass, average='macro', zero_division=0))
+#     print('Recall (macro):    ', metrics.recall_score(yTrue, yPredClass, average='macro', zero_division=0))
+    print('Precision (weighted): ', metrics.precision_score(yTrue, yPredClass, average='weighted', zero_division=0))
+    print('Recall (weighted):    ', metrics.recall_score(yTrue, yPredClass, average='weighted', zero_division=0))
+    print('Precicion (binary 1): ', metrics.precision_score(yTrue, yPredClass, pos_label=1, average='binary', zero_division=0))
+    print('Recall (binary 1):    ', metrics.recall_score(yTrue, yPredClass, pos_label=1, average='binary', zero_division=0))
+    print('Precicion (binary 0): ', metrics.precision_score(yTrue, yPredClass, pos_label=0, average='binary', zero_division=0))
+    print('Recall (binary 0):    ', metrics.recall_score(yTrue, yPredClass, pos_label=0, average='binary', zero_division=0))
+    print('f1 score (binary 0): ', metrics.f1_score(yTrue, yPredClass, pos_label=0, average='binary', zero_division=0))
+    print('f1 score(binary 1):    ', metrics.f1_score(yTrue, yPredClass, pos_label=1, average='binary', zero_division=0))
+
+#     print('classification_report:    ', metrics.classification_report(yTrue, yPredClass))
+
 def write_results_to_csv(predResultsPath, selectionFeaturesPath, FSmethod, FSparams, selectedFeatures, MLmethod, MLparams, yTrueTest, yPredRegTest, yTrueVal, yPredRegVal):
     """
     ACTION: 

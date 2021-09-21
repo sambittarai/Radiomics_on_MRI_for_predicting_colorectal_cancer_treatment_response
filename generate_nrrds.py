@@ -29,13 +29,18 @@ def load_DICOM(path, get_spacing=True):
     except:
         print("DICOM cannot be loaded with this function. Try others")
         
-def load_Masks(path):
+def load_Masks(path, reverse=False):
     mask_list = []
     for i in sorted(os.listdir(path)):
-        mask = np.asarray(Image.open(os.path.join(path, i)))
+#         mask = np.asarray(Image.open(os.path.join(path, i)))
+        mask = np.asarray(cv2.imread(os.path.join(path, i), 0))
         mask_list.append(mask)
-
-    mask_arr = np.stack(mask_list, axis=0)     
+    #Load mask in reverse manner
+    if reverse == True:
+        mask_arr = np.stack(mask_list[::-1], axis=0)
+    #Load mask in same manner
+    else:
+        mask_arr = np.stack(mask_list, axis=0)
     return mask_arr
 
 def create_3d_nrrd(data, dataPath, name, patientDict):
@@ -53,10 +58,15 @@ def main():
     
     for index, i in tqdm(df.iterrows()):
         DICOM_path, Mask_T2M_path, Mask_T2Mplus_path  = i['DICOM_paths'], i['Mask_T2M_paths'], i['Mask_T2M+_paths']
-        # Get array from Image
-        image_arr, spacing = load_DICOM(DICOM_path, get_spacing=True)
-        mask_T2M_arr = load_Masks(Mask_T2M_path)
-        mask_T2Mplus_arr = load_Masks(Mask_T2Mplus_path)
+        # Get array from Image for Patient IDs which are in reverse order
+        if i['Patient_ID'] in args.reverse_IDs:
+            image_arr, spacing = load_DICOM(DICOM_path, get_spacing=True)
+            mask_T2M_arr = load_Masks(Mask_T2M_path, reverse=True)
+            mask_T2Mplus_arr = load_Masks(Mask_T2Mplus_path, reverse=True)
+        else:
+            image_arr, spacing = load_DICOM(DICOM_path, get_spacing=True)
+            mask_T2M_arr = load_Masks(Mask_T2M_path)
+            mask_T2Mplus_arr = load_Masks(Mask_T2Mplus_path)
         # Generate .nrrd files for those patients where DICOM.shape == Mask_T2M.shape == Mask_T2M+.shape.
         if image_arr.shape == mask_T2M_arr.shape and image_arr.shape == mask_T2Mplus_arr.shape:
             # Generate Nrrds and save it
@@ -69,14 +79,37 @@ def main():
                 create_3d_nrrd(mask_T2M_arr, save_temp, 'T2M.nrrd', spacing)
                 # Generate Nrrd for T2M+
                 create_3d_nrrd(mask_T2Mplus_arr, save_temp, 'T2M+.nrrd', spacing)
-            elif len(os.listdir(save_temp)) != 3:
+            else :
                 create_3d_nrrd(image_arr, save_temp, 'DICOM.nrrd', spacing)
                 create_3d_nrrd(mask_T2M_arr, save_temp, 'T2M.nrrd', spacing)
                 create_3d_nrrd(mask_T2Mplus_arr, save_temp, 'T2M+.nrrd', spacing)
-            else:
-                pass
+                
+        elif image_arr.shape == mask_T2M_arr.shape:
+            save_temp = os.path.join(save_nrrd_path, i['Patient_ID'])
+            if not os.path.exists(save_temp):
+                os.mkdir(save_temp)
+                # Generate Nrrd for DICOM
+                create_3d_nrrd(image_arr, save_temp, 'DICOM.nrrd', spacing)
+                # Generate Nrrd for T2M
+                create_3d_nrrd(mask_T2M_arr, save_temp, 'T2M.nrrd', spacing)
+            else :
+                create_3d_nrrd(image_arr, save_temp, 'DICOM.nrrd', spacing)
+                create_3d_nrrd(mask_T2M_arr, save_temp, 'T2M.nrrd', spacing)
+                
+        elif image_arr.shape == mask_T2Mplus_arr.shape:
+            save_temp = os.path.join(save_nrrd_path, i['Patient_ID'])
+            if not os.path.exists(save_temp):
+                os.mkdir(save_temp)
+                # Generate Nrrd for DICOM
+                create_3d_nrrd(image_arr, save_temp, 'DICOM.nrrd', spacing)
+                # Generate Nrrd for T2M+
+                create_3d_nrrd(mask_T2Mplus_arr, save_temp, 'T2M+.nrrd', spacing)
+            else :
+                create_3d_nrrd(image_arr, save_temp, 'DICOM.nrrd', spacing)
+                create_3d_nrrd(mask_T2Mplus_arr, save_temp, 'T2M+.nrrd', spacing)
+
         else:
-            print("Dimension of DICOM, T2M, T2M+ do not match: {}",format(i['Patient_ID']))
+            print("Dimension of DICOM, T2M, T2M+ do not match: {}".format(i['Patient_ID']))
     
 if __name__ == "__main__":
     main()

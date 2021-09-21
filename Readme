@@ -38,13 +38,23 @@
 Pipeline:-
 
 	* Include all the relevant arguments in "config.py".
-	* Execute "generate_masks.py". Manually check all the generated 2D binary masks with the original annotation. If you encounter any failing mask (Patient ID where the generated 2D mask is different
-	  from the original annotation), write that patient ID into the file called "manual_masks_to_add.txt". (This step is yet to be completed)
+	* Execute "generate_masks.py" in order to generate the 2D segmentation masks for all the Patient IDs. Manually check all the generated 2D binary masks with the original annotation. If you
+	  encounter any failing mask (Patient ID where the generated 2D mask is different from the original annotation), write that patient ID into the file called "manual_masks_to_add.txt" and 
+	  "args.Manual_IDs_T2M" and "args.Manual_IDs_T2M+". (This step is yet to be completed).
+	* Execute "generate_masks_manual.py" in order to generate the masks of IDs specified in "args.Manual_IDs_T2M" or "args.Manual_IDs_T2M+" without adding the interior.
+	  Before executing this file, change the following line numbers according to your needs (Whether you want to generate the masks for T2M or T2M+) :- 24, 27.
+	* Manually annotate the slices for all the patient IDs specified in "args.Manual_IDs_T2M". 
+	  Execute "errosion_manual.py" to the PatientIDs specified in "args.Manual_IDs_T2M" in order to apply erosion to the Patient IDs that you have annotated manually.
+
 	* Execute "prepare_df.py" in order to get the dataframe which has path to DICOM & Mask data for all the patients (| Sl No. | Patient ID | DICOM path | Tiff T2M path | Tiff T2M+ path | Mask T2M
           path | Mask T2M+ path |). Save the "df_raw.csv" and "patients.txt" in /../Radiomics/save_files/
 	* Execute "generate_nrrds.py" in order to generate the .nrrd files from DICOM, Mask_T2M, MaskT2M+ for all the patients and save it in "Data_Nrrd" folder.
-	* Execute "prepare_df_nrrd.py" in order to generate a csv file with the following columns: {| Sl No. | Patient ID | DICOM path | T2M path | T2M+ path |}. All the Patient IDs mentioned in this df
-	  has DICOM.nrrd, T2M.nrrd, T2M+.nrrd files. We need the list of Patient IDs for which all the .nrrd files exists in order to extract the features.
+	  Generate .nrrd files for those patients where DICOM.shape == Mask_T2M.shape == Mask_T2M+.shape.
+	  If you encounter a Patient ID where the annotation is in reverse order then generate the .nrrd file in the reverse order.
+	  Delete the following Patient IDs whose .nrrd files you have just created: [Pat96, Pat104, Pat123] (Reasons are described in 1st and 2nd point of the note).
+	* Execute "prepare_df_nrrd.py" in order to generate a csv file with the following columns: {| Sl No. | Patient ID | DICOM path | T2M path or T2M+ path |}. All the Patient IDs mentioned in this df
+	  has DICOM.nrrd, T2M.nrrd or T2M+.nrrd files. We need the list of Patient IDs for which all the .nrrd files exists in order to extract the features. In order to generate the df, edit the
+	  parameter called args.mask2use in config.py in order to choose between "T2M" or "T2M+".
 	* Execute "feature_extraction.py" in order to extract all the radiomic features from all the patients (available) with [T2M, T2M+] masks and save it in "feature_extraction/selection_features.csv".
 	* Execute "run_entire_pipeline.py" which executes "feature_selection.py" and "ml_prediction.py".
 
@@ -53,6 +63,23 @@ Pipeline:-
 	{ * Execute "feature_selection.py" in order to select only the important features out of all the features that are extracted along with the Patient outcome (1: No response - 4: Complete response).
 	  It returns a list of selected features.
 	  * Execute ml_prediction.py in order to perform train, validate, test on the patient data with the features that is selected.}
+
+
+
+
+Note:-
+	* While executing "feature_extraction.py", for Patient ID = "Pat123", the pipeline is giving "Key Error" because "manual_features.csv" file does not contains this ID. Temporarily in order to fix
+	  this, just remove "Pat123" folder from "Data_Nrrd" directory. (This ID is removed while executing feature extraction)
+	* For ["Pat96", "Pat104"], the DICOM slices looks very much different than the corresponding TIFF slices. (This ID is removed while executing feature extraction)
+
+
+
+
+
+
+
+
+
 
 
 

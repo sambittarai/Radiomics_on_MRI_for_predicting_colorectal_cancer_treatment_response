@@ -123,26 +123,22 @@ def main(args):
     # Updating the Dictionary keys
     dicomFeaturesDict = { 'Pat' + k.replace('_DICOM', ''): v for k, v in dicomFeaturesDict.items() }
 #     manualFeaturesDict = { 'Pat' + k: v for k, v in manualFeaturesDict.items() }
-
-#     print(manualFeaturesDict.keys())
-#     print(dicomFeaturesDict.keys())
     
     # All patient IDs with a DICOM-file
     DICOM_IDs = list(dicomFeaturesDict.keys())
     # All patient IDs with nrrds
     Nrrd_IDs = df_nrrd['Patient_ID']
-    # All patient ID:s with images, dicom-files, age and outcome
+    # All patient IDs with images, dicom-files, age and outcome
     pat_IDs = []
     for id in Nrrd_IDs:
         if id in DICOM_IDs:
             pat_IDs.append(id)
         else:
             print("DICOM HTML file does not exists: ", id)
-    
-    print("pat_IDs length: {} NRRDs length: {} DICOMs length: {}".format(len(pat_IDs), len(Nrrd_IDs), len(DICOM_IDs)))
+
+    print("pat_IDs length: {}, NRRDs length: {}, DICOMs length: {}".format(len(pat_IDs), len(Nrrd_IDs), len(DICOM_IDs)))
     # Extract features for every patient and put the result in a file
     for patientId in tqdm(sorted(pat_IDs)):
-        #print(patientId)
         if extract_features_from_patient(df_nrrd[df_nrrd['Patient_ID'] == patientId], patientId, args.img2use, args.mask2use, args.paramsPath, args.selectionFeaturesPath, manualFeaturesDict[patientId], dicomFeaturesDict[patientId]):
             print(f"{patientId}: features extracted")
         else:

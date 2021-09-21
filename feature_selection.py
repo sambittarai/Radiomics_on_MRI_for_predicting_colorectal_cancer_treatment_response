@@ -74,7 +74,7 @@ def select_features(method, params, selectionFeaturesPath, manualFeaturesPath, a
     elif method == 'LASSO': 
         # Extract parameter setting, fit LASSO model and collect the importance of each feature
         nFeatures = params['nFeatures']
-        alpha = 0.02
+        alpha = 0.002
         clf = Lasso(alpha=alpha, normalize=True, max_iter=2000).fit(X, y.values.ravel())
         importance = np.abs(clf.coef_)
 
