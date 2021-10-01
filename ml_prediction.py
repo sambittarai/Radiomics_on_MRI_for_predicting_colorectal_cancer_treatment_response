@@ -182,7 +182,6 @@ def validate_model(Xtrain, yTrain, method, params):
 
 def save(yTrue, yPredProb, yPredReg):
 #     yPredClass = np.round(yPredReg).astype(int)
-    
     np.save("/media/sambit/HDD/Sambit/Projects/Radiomics_Project1/Code/Radiomics/Predictions/Prediction Values/4_class_classification/yTrue_LogReg_RFclass.npy", yTrue)
     np.save("/media/sambit/HDD/Sambit/Projects/Radiomics_Project1/Code/Radiomics/Predictions/Prediction Values/4_class_classification/yPredClass_LogReg_RFclass.npy", yPredReg)
     np.save("/media/sambit/HDD/Sambit/Projects/Radiomics_Project1/Code/Radiomics/Predictions/Prediction Values/4_class_classification/yPredProb_LogReg_RFclass.npy", yPredProb)

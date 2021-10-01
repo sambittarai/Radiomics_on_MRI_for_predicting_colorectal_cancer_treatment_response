@@ -33,14 +33,26 @@
 
 [12] ml_prediction.py :- Performs train, validate, test on the Patient data with the selected features.
 
-[13] run_entire_pipeline.py :- Executes "feature_selection.py" and "ml_prediction.py".
+[13] main.py :- Executes "feature_selection.py" and "ml_prediction.py". It executes the overall pipeline and display the results.
+
+[14] Prediction (folder) :- Folder containing csv files which contain predictions.
+
+[15] save_files (folder) :- Folder containing the following files:-
+									* df_raw.csv :- Create the df with the following columns: 
+												(| Sl No. | Patient ID | DICOM path | Tiff T2M path | Tiff T2M+ path | Mask T2M path | Mask T2M+ path |)
+									* df_nrrd.csv :- Create the df for all the patients (with available .nrrd files) with the following columns: 
+																	{| Sl No. | Patient ID | DICOM path | T2M path | T2M+ path |} 
+									* Patient_IDs.csv :-
+									* patients.txt :- 
+
+[16] erosion_manual.py :- Apply erosion to the manually segmented Patient IDs specified in "args.Manual_IDs_T2M".
 
 Pipeline:-
 
 	* Include all the relevant arguments in "config.py".
 	* Execute "generate_masks.py" in order to generate the 2D segmentation masks for all the Patient IDs. Manually check all the generated 2D binary masks with the original annotation. If you
 	  encounter any failing mask (Patient ID where the generated 2D mask is different from the original annotation), write that patient ID into the file called "manual_masks_to_add.txt" and 
-	  "args.Manual_IDs_T2M" and "args.Manual_IDs_T2M+". (This step is yet to be completed).
+	  "args.Manual_IDs_T2M" and "args.Manual_IDs_T2M+".
 	* Execute "generate_masks_manual.py" in order to generate the masks of IDs specified in "args.Manual_IDs_T2M" or "args.Manual_IDs_T2M+" without adding the interior.
 	  Before executing this file, change the following line numbers according to your needs (Whether you want to generate the masks for T2M or T2M+) :- 24, 27.
 	* Manually annotate the slices for all the patient IDs specified in "args.Manual_IDs_T2M". 
@@ -56,7 +68,8 @@ Pipeline:-
 	  has DICOM.nrrd, T2M.nrrd or T2M+.nrrd files. We need the list of Patient IDs for which all the .nrrd files exists in order to extract the features. In order to generate the df, edit the
 	  parameter called args.mask2use in config.py in order to choose between "T2M" or "T2M+".
 	* Execute "feature_extraction.py" in order to extract all the radiomic features from all the patients (available) with [T2M, T2M+] masks and save it in "feature_extraction/selection_features.csv".
-	* Execute "run_entire_pipeline.py" which executes "feature_selection.py" and "ml_prediction.py".
+	* Execute "main.py" which executes "feature_selection.py" and "ml_prediction.py".
+	  This will display the results.
 
 
 

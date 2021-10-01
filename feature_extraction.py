@@ -2,7 +2,6 @@ import cv2
 import os
 from radiomics import featureextractor, setVerbosity
 import scipy
-# import trimesh
 from tqdm import tqdm
 import csv
 import re

@@ -3,6 +3,9 @@ import numpy as np
 import os
 import csv
 import re
+import pydicom
+import numpy as np
+from skimage.transform import resize
 
 def create_mask(imagePath, addInterior=True):
     """ 
@@ -156,4 +159,81 @@ def extract_dicom_features(dataPath, features = ['Patients Sex', 'Patients Weigh
                 writer.writerow(patDict)
 
     return allPatsDict
+
+def dicom2array(folder):
+    """
+    Action:
+        Takes the DICOM path as input and returns the following:
+        Image Array, Origin, Spacing
+    INPUTS:
+        folder: path to the DICOM folder containing all the DICOM slices.
+    OUTPUTS:
+        slices: Image Array of the DICOM Image
+        origin: Origin of the DICOM Image
+        spacing: Spacing of the DICOM Image
+    """
+    files = sorted(os.listdir(folder))
+    numbers = []
+    slices = []
+    origins = []
+    for enum_file,file in enumerate(files):
+        try:
+            ds = pydicom.read_file(os.path.join(folder,file))
+            pixels = ds.pixel_array
+            pixels = pixels*ds.RescaleSlope + ds.RescaleIntercept
+            numbers.append(int(ds[0x20,0x13].value))
+            slices.append(pixels)
+            origins.append(ds.ImagePositionPatient)
+            
+            if enum_file == 0:
+                thickness = ds.SliceThickness
+                pixelsize = ds.PixelSpacing
+            
+        except:
+            continue
+        
+    numbers = np.array(numbers)
+    
+    slices = np.array(slices)
+    sort = np.argsort(numbers)
+    slices = slices[sort]
+    origin = np.array(list(origins[sort[0]])).astype(float)
+    origin = np.roll(origin,1)
+    
+    spacing = np.array([thickness] + list(pixelsize))
+    
+    return slices,origin,spacing
+
+def convert_DWI_to_T2(path_DWI, path_T2):
+    """
+    Action:
+        Takes the DICOM path of DWI and T2 images as input and applies transformation on the DWI image
+        such that the dimension, origin, spacing of the DWI image is the same as the T2 image.
+    INPUTS:
+        path_DWI: path to the Diffusion Weighted folder containing all the DICOM slices.
+        path_T2: path to the T2 Weighted folder containing all the DICOM slices.
+    OUTPUTS:
+        DWI_crop_resized: Diffusion Weighted Image Array with the dimension same as T2.
+        T2: T2w Image Array.
+    """
+    T2, origin_T2, spacing_T2 = dicom2array(path_T2)
+    DWI, origin_DWI, spacing_DWI = dicom2array(path_DWI)
+    # Adjust X and Y dimensions of diffusion image to match 2D Field of View
+    # Get origin differences in X and Y axes, both in spatial and coordinate values
+    delta_x, delta_y = [np.abs(np.abs(origin_DWI[i])-np.abs(origin_T2[i])) for i in range(1, len(origin_T2))]
+    # Get coordinates in diffusion image for cropping
+    delta_x_coord, delta_y_coord = [int(delta_x//spacing_DWI[1]), int(delta_x//spacing_DWI[2])]
+    # Get corresponding slice in diffusion image for slice number "t2_number"
+    z_loc = [origin_T2[0] + i*spacing_T2[0] for i in range(T2.shape[0])]
+    n_diff = [int(round(np.abs(z_loc[i] - origin_DWI[0])/spacing_DWI[0])) for i in range(len(z_loc))]
+    # Since the FOV in diffusion > FOV in T2 and both acquisitions are centered in the body of the patient, crop diffusion image with the delta values found in  and Y
+    DWI_crop_list = []
+    for i in range(len(z_loc)):
+        DWI_crop = DWI[i, delta_x_coord:(-delta_x_coord), delta_y_coord:(-delta_y_coord)]
+        DWI_crop_list.append(DWI_crop)
+    DWI_crop = np.stack(DWI_crop_list, 0)
+    # Resize cropped diffusion to match T2 dimensions
+    DWI_crop_resized = resize(DWI_crop, (T2.shape[0], T2.shape[1], T2.shape[2]), order=5)
+    return DWI_crop_resized, T2
+
 

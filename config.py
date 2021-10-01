@@ -35,15 +35,15 @@ def parse_args():
     
     # Testing
     parser.add_argument("--paramSearchResultsPath", default="/media/sambit/HDD/Sambit/Projects/Radiomics_Project1/Code/Radiomics/Predictions/param_search_results.csv", help="path to csv-file that will be created, containing results from the parameter optimization")
-#     parser.add_argument("--testIds", default=['Pat1', 'Pat2', 'Pat8', 'Pat11', 'Pat20', 'Pat22', 'Pat44', 'Pat84'], help="Test IDs")
     parser.add_argument("--testIds", default=['Pat1'], help="Test IDs")
+#     parser.add_argument("--testIds", default=['Pat1', 'Pat2', 'Pat4', 'Pat6', 'Pat9', 'Pat10', 'Pat20', 'Pat21', 'Pat40', 'Pat43', 'Pat44', 'Pat46', 'Pat54', 'Pat55', 'Pat101'], help="Test IDs")
     parser.add_argument("--predResultsPath", default="/media/sambit/HDD/Sambit/Projects/Radiomics_Project1/Code/Radiomics/Predictions/prediction_results.csv", help="Path to the csv-file where to write the results")
     
     # Data
     parser.add_argument("--reverse_IDs", default=['Pat10', 'Pat25', 'Pat30', 'Pat31', 'Pat32', 'Pat63', 'Pat64', 'Pat65', 'Pat73', 'Pat74', 'Pat75', 'Pat76', 'Pat77', 'Pat78', 'Pat79', 'Pat80', 'Pat82', 'Pat83', 'Pat84', 'Pat85', 'Pat86', 'Pat87', 'Pat88', 'Pat103', 'Pat107', 'Pat108', 'Pat109', 'Pat110', 'Pat111', 'Pat112', 'Pat113', 'Pat115', 'Pat116', 'Pat117', 'Pat118'], help="Patient IDs where the annotation is in the reverse order to that of the DICOMs")
     
     # Manual IDs (Pat IDs where generate_masks.py fail for T2M)
-    parser.add_argument("--Manual_IDs_T2M", default=['Pat6', 'Pat8', 'Pat10', 'Pat11', 'Pat13', 'Pat21', 'Pat26', 'Pat31', 'Pat32', 'Pat42', 'Pat46', 'Pat51', 'Pat65', 'Pat70', 'Pat71', 'Pat74', 'Pat75', 'Pat81', 'Pat85', 'Pat88', 'Pat94', 'Pat101', 'Pat103', 'Pat108', 'Pat111', 'Pat112', 'Pat113', 'Pat116', 'Pat118'], help="Patient IDs where the annotation is in the reverse order to that of the DICOMs")
+    parser.add_argument("--Manual_IDs_T2M", default=['Pat6', 'Pat8', 'Pat10', 'Pat11', 'Pat13', 'Pat21', 'Pat26', 'Pat31', 'Pat32', 'Pat42', 'Pat46', 'Pat51', 'Pat65', 'Pat70', 'Pat71', 'Pat74', 'Pat75', 'Pat81', 'Pat85', 'Pat88', 'Pat94', 'Pat101', 'Pat103', 'Pat108', 'Pat111', 'Pat112', 'Pat113', 'Pat116', 'Pat118'], help="Patient IDs where mask generation failed")
     
     args = parser.parse_args()
     return args
